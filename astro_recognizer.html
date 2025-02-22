@@ -106,33 +106,52 @@ layout: page
       };
       reader.readAsDataURL(file);
 
-      // Connect to API - CORRECTED ENDPOINT
-      const client = await Client.connect("nosttradamus/astro-recognizer");
-      const result = await client.predict("/predict", {
-        image: new Blob([file], { type: file.type })
+      // 1. Verify API connection
+      const client = await Client.connect("nosttradamus/astro-recognizer", {
+        hf_token: "YOUR_HF_TOKEN_HERE" // Add if Space is private
       });
 
-      console.log("API Response Structure:", result);
+      // 2. Add timeout for failed requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      // PROCESSING FOR YOUR SPECIFIC API RESPONSE
-      const validPredictions = result.data[0][0]
-        .filter(p => typeof p === 'object' && 'tibel' in p && 'confidence' in p)
-        .sort((a, b) => b.confidence - a.confidence);
+      // 3. Make prediction with error handling
+      const result = await client.predict("/predict", {
+        image: new Blob([file], { type: file.type }),
+        signal: controller.signal
+      });
 
-      if (validPredictions.length > 0) {
-        // Clean label formatting
-        const cleanLabel = validPredictions[0].tibel
-          .replace(/([a-z])([A-Z])/g, '$1 $2') // Fix spacing
-          .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize words
+      clearTimeout(timeoutId);
 
-        resultDiv.textContent = cleanLabel;
-      } else {
-        resultDiv.textContent = "Could not determine prediction";
+      console.log("RAW API RESPONSE:", result);
+
+      // 4. Handle response format variations
+      const rawData = result?.data;
+      if (!rawData || !Array.isArray(rawData[0][0])) {
+        throw new Error("Unexpected API response structure");
       }
 
+      // 5. Process predictions safely
+      const validPredictions = rawData[0][0]
+        .filter(p => p?.tibel?.trim() && !isNaN(p?.confidence))
+        .sort((a, b) => b.confidence - a.confidence);
+
+      if (validPredictions.length === 0) {
+        throw new Error("No valid predictions found");
+      }
+
+      // 6. Clean output
+      const cleanLabel = validPredictions[0].tibel
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+      resultDiv.textContent = cleanLabel;
+
     } catch (error) {
-      console.error("API Error:", error);
-      resultDiv.textContent = "Prediction failed - try another image";
+      console.error("FULL ERROR DETAILS:", error);
+      resultDiv.textContent = error.message.includes("aborted")
+        ? "Request timed out - check internet connection"
+        : "Prediction failed - try another image";
     } finally {
       loadingDiv.style.display = "none";
     }
