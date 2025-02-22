@@ -3,50 +3,9 @@ title: Astro Recognizer
 layout: page
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astro Recognizer</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    #result {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-    #image-preview {
-      max-width: 100%;
-      height: auto;
-      margin-top: 20px;
-    }
-    #loading {
-      display: none;
-      margin-top: 20px;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <h1>Astro Recognizer</h1>
-  <p>Upload an image to recognize astrological symbols:</p>
-  
-  <!-- File input for image upload -->
-  <input type="file" id="image-input" accept="image/*">
-  
-  <!-- Image preview -->
-  <img id="image-preview" src="#" alt="Image Preview" style="display: none;">
-  
-  <!-- Loading indicator -->
-  <div id="loading">Loading...</div>
-  
-  <!-- Result display -->
-  <div id="result"></div>
-
-  <script type="module">
+<input id="photo" type="file">
+<div id="results"></div>
+<script type="module">
     // Import the Gradio client
     import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
@@ -100,6 +59,4 @@ layout: page
         }
       }
     });
-  </script>
-</body>
-</html>
+</script>
