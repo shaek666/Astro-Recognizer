@@ -113,6 +113,7 @@ layout: page
             text-transform: uppercase;
             text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff, 0 0 45px #ff0000;
             animation: glitch 1.5s infinite;
+            margin-bottom: 50px;
         }
 
         @keyframes glitch {
@@ -121,51 +122,63 @@ layout: page
             100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
         }
 
-        /* Drag and drop box */
+        /* Unified drag-and-drop + file input box */
         .upload-box {
-            border: 2px dashed #ff00ff;
+            width: 80%;
+            max-width: 600px;
+            margin: 0 auto;
             padding: 40px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px dashed #ff00ff;
+            border-radius: 20px;
             color: white;
-            border-radius: 15px;
+            text-align: center;
+            font-size: 1.5rem;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
-            position: relative;
-            overflow: hidden;
         }
 
         .upload-box:hover {
-            background: rgba(0, 0, 0, 0.8);
-            box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
-        }
-
-        .upload-box:before {
-            content: "🌌 Drag & Drop or Choose File 🌠";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.5rem;
-            animation: glow 1.5s infinite alternate;
-        }
-
-        @keyframes glow {
-            0% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff; }
-            100% { text-shadow: 0 0 15px #ff00ff, 0 0 25px #ff00ff; }
+            background: rgba(0, 0, 0, 0.85);
+            box-shadow: 0 0 25px #ff00ff, 0 0 50px #00ffff;
         }
 
         input[type="file"] {
             display: none;
         }
 
+        /* Image preview */
         #image-preview {
             display: none;
             max-width: 90%;
-            height: auto;
-            margin-top: 20px;
-            border-radius: 10px;
+            margin-top: 30px;
+            border-radius: 15px;
             border: 3px solid #fff;
             box-shadow: 0 0 15px #ff00ff;
+        }
+
+        /* Button styles */
+        .button {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, #ff00ff, #00ffff);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #00ffcc;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .button:hover {
+            box-shadow: 0 0 30px #ff00ff, 0 0 60px #00ffff;
+            transform: scale(1.1);
+        }
+
+        .button-container {
+            margin-top: 50px;
         }
 
         #loading {
@@ -187,32 +200,6 @@ layout: page
             text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
         }
 
-        .button {
-            display: inline-block;
-            margin: 20px 10px;
-            padding: 12px 25px;
-            font-size: 1.2rem;
-            background: linear-gradient(90deg, #ff00ff, #00ffff);
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 0 10px #00ffcc;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .button:hover {
-            box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
-            transform: scale(1.1);
-        }
-
-        .button-container {
-            margin-top: 30px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
         /* Floating stars animation */
         @keyframes move-stars {
             from { transform: translateY(0); }
@@ -232,13 +219,17 @@ layout: page
 <body>
 
     <h1>🌌 Astro Recognizer 🚀</h1>
-    
+
+    <!-- Drag and drop or choose file input -->
     <div class="upload-box" id="upload-box">
-        <label for="image-input" style="cursor: pointer;">📁 Choose File</label>
-        <input id="image-input" type="file">
-        <img id="image-preview" src="#" alt="Uploaded Image Preview">
+        🌌 Drag & Drop or Choose File
+        <input id="image-input" type="file" accept="image/*">
     </div>
-    
+
+    <!-- Image preview -->
+    <img id="image-preview" src="#" alt="Uploaded Image Preview">
+
+    <!-- Analyze button -->
     <div class="button-container">
         <button class="button" id="analyze-btn" disabled>🔬 Start Analyzing</button>
     </div>
@@ -246,9 +237,10 @@ layout: page
     <div id="loading">🔄 Analyzing...</div>
     <div id="result"></div>
 
+    <!-- Action buttons -->
     <div class="button-container">
-        <button class="button" onclick="location.reload()">🔄 Try Another Image</button>
-        <button class="button" onclick="window.location.href='/'">← Back to Home</button>
+        <button class="button" id="try-again-btn" style="display:none;">🔄 Try Another Image</button>
+        <button class="button" id="back-home-btn" onclick="window.location.href='index.html'">← Back to Home</button>
     </div>
 
     <!-- Floating stars -->
@@ -265,30 +257,54 @@ layout: page
     <script type="module">
         import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
+        const uploadBox = document.getElementById("upload-box");
         const imageInput = document.getElementById("image-input");
         const imagePreview = document.getElementById("image-preview");
         const analyzeBtn = document.getElementById("analyze-btn");
         const resultDiv = document.getElementById("result");
         const loadingDiv = document.getElementById("loading");
-        const uploadBox = document.getElementById("upload-box");
+        const tryAgainBtn = document.getElementById("try-again-btn");
+        const backHomeBtn = document.getElementById("back-home-btn");
 
         let selectedFile = null;
 
+        // Handle drag and drop
+        uploadBox.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            uploadBox.style.background = "rgba(0, 0, 0, 0.85)";
+        });
+
+        uploadBox.addEventListener("dragleave", () => {
+            uploadBox.style.background = "rgba(0, 0, 0, 0.7)";
+        });
+
+        uploadBox.addEventListener("drop", (event) => {
+            event.preventDefault();
+            selectedFile = event.dataTransfer.files[0];
+            handleFile(selectedFile);
+        });
+
+        // Handle file selection
         imageInput.addEventListener("change", (event) => {
             selectedFile = event.target.files[0];
-            if (selectedFile) {
+            handleFile(selectedFile);
+        });
+
+        // Handle file selection logic
+        function handleFile(file) {
+            if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     imagePreview.src = e.target.result;
                     imagePreview.style.display = "block";
+                    analyzeBtn.disabled = false;
+                    uploadBox.style.display = "none"; // Hide the upload box after file is selected
                 };
-                reader.readAsDataURL(selectedFile);
-
-                analyzeBtn.disabled = false;
-                analyzeBtn.style.display = 'inline-block';
+                reader.readAsDataURL(file);
             }
-        });
+        }
 
+        // Start analysis
         analyzeBtn.addEventListener("click", async () => {
             if (!selectedFile) return;
 
@@ -313,32 +329,13 @@ layout: page
                 resultDiv.textContent = "Error, try again!";
             } finally {
                 loadingDiv.style.display = "none";
+                tryAgainBtn.style.display = "inline-block"; // Show "Try Again" button
             }
         });
 
-        uploadBox.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            uploadBox.style.background = "rgba(0, 0, 0, 0.8)";
-        });
-
-        uploadBox.addEventListener("dragleave", () => {
-            uploadBox.style.background = "rgba(0, 0, 0, 0.6)";
-        });
-
-        uploadBox.addEventListener("drop", (e) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                imageInput.files = e.dataTransfer.files;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = "block";
-                };
-                reader.readAsDataURL(file);
-                analyzeBtn.disabled = false;
-                analyzeBtn.style.display = 'inline-block';
-            }
+        // Try again button functionality
+        tryAgainBtn.addEventListener("click", () => {
+            window.location.reload(); // Reload the page
         });
     </script>
 
