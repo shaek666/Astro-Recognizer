@@ -3,14 +3,27 @@ title: Astro Recognizer
 layout: page
 ---
 
-<!-- <p><a href="{{ site.baseurl }}/">Home</a> | <a href="{{ site.baseurl }}/astro_recognizer">Classifier</a></p> --->
-
-[Home]({{ site.baseurl }}/) | [Classifier]({{ site.baseurl }}/astro_recognizer)
+<p><a href="{{ site.baseurl }}/">Home</a> | <a href="{{ site.baseurl }}/astro_recognizer">Classifier</a></p>
 
 <input id="image-input" type="file">
 <div id="image-preview"></div>
 <div id="loading" style="display: none;">Analyzing...</div>
 <div id="result"></div>
+
+<!-- Back to Home Button -->
+<div style="margin-top: 20px;">
+  <a href="{{ site.baseurl }}/" style="
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #0366d6;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+  ">
+    ← Back to Home
+  </a>
+</div>
 
 <script type="module">
   // Import the Gradio client
