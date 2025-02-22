@@ -97,10 +97,10 @@ layout: page
     <title>Astro Recognizer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
     <style>
-        /* Dark, futuristic cosmic background */
+        /* Darker, high-end cosmic theme */
         body {
             font-family: 'Orbitron', sans-serif;
-            background: radial-gradient(circle, #000000, #0d0d0d, #1a1a1a);
+            background: radial-gradient(circle, #000000, #0a0217, #14062b);
             color: white;
             text-align: center;
             overflow: hidden;
@@ -111,33 +111,51 @@ layout: page
         h1 {
             font-size: 3rem;
             text-transform: uppercase;
-            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
+            text-shadow: 0 0 15px #0099ff, 0 0 30px #ff00ff;
             animation: glitch 1.5s infinite alternate;
         }
 
         @keyframes glitch {
-            0% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
-            50% { text-shadow: 0 0 20px #ff0000, 0 0 40px #0000ff; }
-            100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
+            0% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #0099ff; }
+            50% { text-shadow: 0 0 20px #ff0000, 0 0 40px #0033ff; }
+            100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #0099ff; }
         }
 
-        /* Elegant file input button */
+        /* Drag and Drop Box */
+        #drop-zone {
+            border: 3px dashed #0099ff;
+            border-radius: 10px;
+            padding: 30px;
+            font-size: 1.2rem;
+            color: #ccc;
+            text-shadow: 0 0 10px #00ffff;
+            margin: 20px auto;
+            width: 60%;
+            transition: 0.3s;
+        }
+
+        #drop-zone:hover {
+            border-color: #ff00ff;
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        /* Styled file input */
         .custom-file-upload {
             display: inline-block;
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 25px;
+            background: linear-gradient(90deg, #330066, #0066cc);
             color: white;
-            border: 2px solid #555;
-            border-radius: 8px;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            box-shadow: 0 0 15px #0099ff;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
         }
 
         .custom-file-upload:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border-color: white;
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #0099ff;
+            transform: scale(1.1);
         }
 
         input[type="file"] {
@@ -150,40 +168,47 @@ layout: page
             height: auto;
             margin-top: 20px;
             border-radius: 10px;
-            border: 2px solid #444;
+            border: 3px solid #0099ff;
             box-shadow: 0 0 15px #ff00ff;
         }
 
         #loading {
             font-size: 1.5rem;
             margin-top: 20px;
+            animation: pulse 1s infinite;
             display: none;
-            color: #bbb;
+            color: #ccc;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
         }
 
         #result {
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-top: 20px;
-            color: #ccc;
-            text-shadow: 0 0 8px #555;
+            text-shadow: 0 0 15px #00ffff, 0 0 30px #ff00ff;
         }
 
         .button {
-            display: none; /* Initially hidden */
-            margin: 20px auto;
-            padding: 12px 30px;
+            display: none;
+            margin: 20px 10px;
+            padding: 12px 25px;
             font-size: 1.2rem;
-            background: linear-gradient(90deg, #222, #555);
+            background: linear-gradient(90deg, #330066, #0066cc);
             color: white;
-            border: 2px solid #777;
+            border: none;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #0099ff;
             transition: all 0.3s ease-in-out;
         }
 
         .button:hover {
-            background: linear-gradient(90deg, #333, #777);
-            border-color: white;
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+            transform: scale(1.1);
         }
 
         .button-container {
@@ -193,32 +218,22 @@ layout: page
             gap: 20px;
         }
 
-        /* Floating stars animation */
-        @keyframes move-stars {
-            from { transform: translateY(0); }
-            to { transform: translateY(-100vh); }
-        }
-
-        .stars {
-            position: fixed;
-            width: 2px;
-            height: 2px;
-            background: white;
-            animation: move-stars 10s linear infinite;
-            opacity: 0.8;
-        }
-
     </style>
 </head>
 <body>
 
-    <h1>🌌 Astro Recognizer</h1>
-    
+    <h1>🌌 Astro Recognizer 🚀</h1>
+
     <label for="image-input" class="custom-file-upload">📸 Choose Photo</label>
     <input id="image-input" type="file">
+
+    <div id="drop-zone">🔥 Drag & Drop Image Here</div>
+
     <img id="image-preview" src="#" alt="Uploaded Image Preview">
     
-    <button class="button" id="analyze-btn">🔬 Start Analyzing</button>
+    <div class="button-container">
+        <button class="button" id="analyze-btn" disabled>🔬 Start Analyzing</button>
+    </div>
 
     <div id="loading">🔄 Analyzing...</div>
     <div id="result"></div>
@@ -228,21 +243,11 @@ layout: page
         <button class="button" onclick="window.location.href='/'">← Back to Home</button>
     </div>
 
-    <!-- Floating stars -->
-    <script>
-        for (let i = 0; i < 50; i++) {
-            let star = document.createElement("div");
-            star.className = "stars";
-            star.style.left = Math.random() * 100 + "vw";
-            star.style.top = Math.random() * 100 + "vh";
-            document.body.appendChild(star);
-        }
-    </script>
-
     <script type="module">
         import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
         const imageInput = document.getElementById("image-input");
+        const dropZone = document.getElementById("drop-zone");
         const imagePreview = document.getElementById("image-preview");
         const analyzeBtn = document.getElementById("analyze-btn");
         const resultDiv = document.getElementById("result");
@@ -250,8 +255,20 @@ layout: page
 
         let selectedFile = null;
 
-        imageInput.addEventListener("change", (event) => {
+        imageInput.addEventListener("change", handleFile);
+        dropZone.addEventListener("dragover", (e) => e.preventDefault());
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            selectedFile = e.dataTransfer.files[0];
+            processImage();
+        });
+
+        function handleFile(event) {
             selectedFile = event.target.files[0];
+            processImage();
+        }
+
+        function processImage() {
             if (selectedFile) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -259,14 +276,13 @@ layout: page
                     imagePreview.style.display = "block";
                 };
                 reader.readAsDataURL(selectedFile);
-
-                analyzeBtn.style.display = "inline-block"; // Show analyze button
+                analyzeBtn.disabled = false;
+                analyzeBtn.style.display = "inline-block";
             }
-        });
+        }
 
         analyzeBtn.addEventListener("click", async () => {
             if (!selectedFile) return;
-
             loadingDiv.style.display = "block";
             resultDiv.textContent = "";
 
@@ -275,15 +291,11 @@ layout: page
                 const imageBlob = new Blob([selectedFile], { type: selectedFile.type });
                 const result = await client.predict("/predict", { image: imageBlob });
 
-                if (result.data.length > 0 && result.data[0].confidences.length > 0) {
-                    const highestConfidence = result.data[0].confidences.reduce((max, item) => 
-                        item.confidence > max.confidence ? item : max, 
-                        result.data[0].confidences[0]
-                    );
-                    resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
-                } else {
-                    resultDiv.textContent = "No prediction available.";
-                }
+                const highestConfidence = result.data[0].confidences.reduce((max, item) => 
+                    item.confidence > max.confidence ? item : max, 
+                    result.data[0].confidences[0]
+                );
+                resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
             } catch (error) {
                 resultDiv.textContent = "Error, try again!";
             } finally {
