@@ -106,34 +106,32 @@ layout: page
       };
       reader.readAsDataURL(file);
 
-      // Connect to API
+      // Connect to API - CORRECTED ENDPOINT
       const client = await Client.connect("nosttradamus/astro-recognizer");
       const result = await client.predict("/predict", {
         image: new Blob([file], { type: file.type })
       });
 
-      console.log("Full API Response:", result);
+      console.log("API Response Structure:", result);
 
-      // DIRECTLY ACCESS THE STRUCTURE FROM YOUR SCREENSHOT
-      const rawPredictions = result.data[0][0];
-      
-      // Clean and format the predictions
-      const validPredictions = rawPredictions
-        .filter(p => p.tibel && !isNaN(p.confidence)) // Use 'tibel' from your screenshot
+      // PROCESSING FOR YOUR SPECIFIC API RESPONSE
+      const validPredictions = result.data[0][0]
+        .filter(p => typeof p === 'object' && 'tibel' in p && 'confidence' in p)
         .sort((a, b) => b.confidence - a.confidence);
 
       if (validPredictions.length > 0) {
-        const topPrediction = validPredictions[0].tibel
-          .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between words
-          .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize first letters
-        
-        resultDiv.textContent = topPrediction;
+        // Clean label formatting
+        const cleanLabel = validPredictions[0].tibel
+          .replace(/([a-z])([A-Z])/g, '$1 $2') // Fix spacing
+          .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize words
+
+        resultDiv.textContent = cleanLabel;
       } else {
         resultDiv.textContent = "Could not determine prediction";
       }
 
     } catch (error) {
-      console.error("Full Error:", error);
+      console.error("API Error:", error);
       resultDiv.textContent = "Prediction failed - try another image";
     } finally {
       loadingDiv.style.display = "none";
