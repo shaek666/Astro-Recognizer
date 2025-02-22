@@ -7,7 +7,7 @@ layout: default
 
 [Try the Classifier →](/classifier/)
 
-Can classify 17 different types of astronomical elements
+Can classify 17 different types of astronomical elements.
 
 The Elements:
 
