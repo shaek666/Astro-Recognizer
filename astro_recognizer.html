@@ -25,7 +25,7 @@ layout: page
   </a>
 </div>
 
-<!-- <script type="module">
+<script type="module">
   // Import the Gradio client
   import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
@@ -79,98 +79,4 @@ layout: page
       }
     }
   });
-</script> -->
-
-<script type="module">
-  import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
-
-  const imageInput = document.getElementById("image-input");
-  const imagePreview = document.getElementById("image-preview");
-  const resultDiv = document.getElementById("result");
-  const loadingDiv = document.getElementById("loading");
-
-  imageInput.addEventListener("change", async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Reset UI
-    imagePreview.innerHTML = '';
-    resultDiv.textContent = '';
-    loadingDiv.style.display = "block";
-
-    try {
-      // Display preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; margin: 15px 0; border-radius: 6px;">`;
-      };
-      reader.readAsDataURL(file);
-
-      // API Call
-      const client = await Client.connect("nosttradamus/astro-recognizer");
-      const result = await client.predict("/predict", {
-        image: new Blob([file], { type: file.type })
-      });
-
-      console.log("RAW API RESPONSE:", result);
-
-      // Handle the actual response structure from your logs
-      const rawPredictions = result.data[0];
-      if (!Array.isArray(rawPredictions)) {
-        throw new Error("Invalid predictions format in response");
-      }
-
-      // Process predictions
-      const validPredictions = rawPredictions
-        .filter(p => p?.tibel?.trim() && typeof p?.confidence === 'number')
-        .sort((a, b) => b.confidence - a.confidence);
-
-      if (validPredictions.length === 0) {
-        throw new Error("No valid predictions found");
-      }
-
-      // Format output
-      const cleanLabel = validPredictions[0].tibel
-        .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between words
-        .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize first letters
-
-      resultDiv.innerHTML = `
-        <div class="prediction-result">
-          🪐 Prediction: <strong>${cleanLabel}</strong>
-        </div>
-      `;
-
-    } catch (error) {
-      console.error("Error Details:", error);
-      resultDiv.innerHTML = `
-        <div class="error-message">
-          ⚠️ Error: ${error.message}
-        </div>
-      `;
-    } finally {
-      loadingDiv.style.display = "none";
-    }
-  });
-
-  // Add basic styling
-  const style = document.createElement('style');
-  style.textContent = `
-    .prediction-result {
-      padding: 15px;
-      margin: 20px 0;
-      background: #f6f8fa;
-      border: 1px solid #e1e4e8;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-    .error-message {
-      padding: 15px;
-      margin: 20px 0;
-      background: #ffebee;
-      border: 1px solid #ffcdd2;
-      border-radius: 6px;
-      color: #c62828;
-    }
-  `;
-  document.head.appendChild(style);
 </script>
