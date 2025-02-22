@@ -117,15 +117,22 @@ layout: page
             width: 80%;
             max-width: 600px;
             margin: 2rem auto;
-            padding: 2rem;
+            padding: 4rem 2rem;
             border: 3px dashed #ff00ff;
             border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .upload-container:hover {
             background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 30px #ff00ff55;
+        }
+
+        #upload-text {
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #00ffcc;
         }
 
         #image-preview {
@@ -135,6 +142,24 @@ layout: page
             border-radius: 15px;
             border: 3px solid #fff;
             box-shadow: 0 0 30px #00ffff88;
+        }
+
+        #analyze-btn {
+            display: none;
+            padding: 12px 30px;
+            margin: 1rem auto;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        #analyze-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #ff00ff;
         }
 
         .button-group {
@@ -155,12 +180,7 @@ layout: page
             text-decoration: none;
         }
 
-        .action-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .action-button:hover:not(:disabled) {
+        .action-button:hover {
             transform: scale(1.05);
             box-shadow: 0 0 25px #ff00ff;
         }
@@ -188,13 +208,14 @@ layout: page
     <h1>🌌 Astro Recognizer 🔭</h1>
 
     <div class="upload-container" id="uploadContainer">
-        <div id="uploadText">Drag and Drop Image<br>or Click to Upload</div>
+        <div id="upload-text">Drag and Drop Image or Click to Upload</div>
         <input type="file" id="imageInput" accept="image/*" hidden>
-        <img id="imagePreview" src="#" alt="Preview">
+        <img id="imagePreview" src="#" alt="" style="display: none;">
     </div>
 
-    <button class="action-button" id="analyzeBtn" disabled>🚀 Start Analyzing</button>
-    <div id="loading">Scanning...</div>
+    <button id="analyze-btn">🚀 Start Analyzing</button>
+    
+    <div id="loading">Scanning Cosmic Patterns...</div>
     <div id="result"></div>
 
     <div class="button-group">
@@ -205,82 +226,81 @@ layout: page
     <script type="module">
         import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
-        const container = document.getElementById('uploadContainer');
         const imageInput = document.getElementById('imageInput');
         const imagePreview = document.getElementById('imagePreview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const loading = document.getElementById('loading');
-        const result = document.getElementById('result');
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        const uploadContainer = document.getElementById('uploadContainer');
+        const uploadText = document.getElementById('upload-text');
+        const analyzeBtn = document.getElementById('analyze-btn');
         const resetBtn = document.getElementById('resetBtn');
-        const uploadText = document.getElementById('uploadText');
 
         let selectedFile = null;
 
         // Drag and drop handlers
-        container.addEventListener('dragover', (e) => {
+        uploadContainer.addEventListener('dragover', (e) => {
             e.preventDefault();
-            container.style.borderColor = '#00ffff';
+            uploadContainer.style.borderColor = '#00ffff';
         });
 
-        container.addEventListener('dragleave', () => {
-            container.style.borderColor = '#ff00ff';
+        uploadContainer.addEventListener('dragleave', () => {
+            uploadContainer.style.borderColor = '#ff00ff';
         });
 
-        container.addEventListener('drop', (e) => {
+        uploadContainer.addEventListener('drop', (e) => {
             e.preventDefault();
-            container.style.borderColor = '#ff00ff';
+            uploadContainer.style.borderColor = '#ff00ff';
             handleFile(e.dataTransfer.files[0]);
         });
 
-        container.addEventListener('click', () => imageInput.click());
+        uploadContainer.addEventListener('click', () => imageInput.click());
 
         imageInput.addEventListener('change', (e) => {
             handleFile(e.target.files[0]);
         });
 
         function handleFile(file) {
-            if (file && file.type.startsWith('image/')) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                    uploadText.style.display = 'none';
-                    analyzeBtn.disabled = false;
-                };
-                reader.readAsDataURL(file);
-            }
+            if (!file || !file.type.startsWith('image/')) return;
+
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                uploadText.style.display = 'none';
+                analyzeBtn.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
         }
 
         // Analyze button handler
         analyzeBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
-            loading.style.display = 'block';
-            result.textContent = '';
-            analyzeBtn.disabled = true;
+            // Hide analyze button immediately
+            analyzeBtn.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            resultDiv.textContent = '';
 
             try {
                 const client = await Client.connect("nosttradamus/astro-recognizer");
                 const imageBlob = new Blob([selectedFile], { type: selectedFile.type });
-                const response = await client.predict("/predict", { image: imageBlob });
+                const result = await client.predict("/predict", { image: imageBlob });
 
-                // Updated response handling based on Gradio structure
-                if (response.data && response.data.confidences) {
-                    const predictions = response.data.confidences;
-                    const topResult = predictions.reduce((max, curr) => 
-                        curr.confidence > max.confidence ? curr : max
+                if (result.data.length > 0 && result.data[0].confidences.length > 0) {
+                    const highestConfidence = result.data[0].confidences.reduce((max, item) => 
+                        item.confidence > max.confidence ? item : max, 
+                        result.data[0].confidences[0]
                     );
-                    result.textContent = `Prediction: ${topResult.label}`;
+                    resultDiv.textContent = `Prediction: ${highestConfidence.label}`;
                 } else {
-                    result.textContent = 'No clear prediction found';
+                    resultDiv.textContent = "No prediction available.";
                 }
             } catch (error) {
-                console.error('Prediction error:', error);
-                result.textContent = 'Error analyzing image - Please try again';
+                console.error("API Error:", error);
+                resultDiv.textContent = "An error occurred. Please try again.";
             } finally {
-                loading.style.display = 'none';
-                analyzeBtn.disabled = false;
+                loadingDiv.style.display = 'none';
             }
         });
 
@@ -289,8 +309,8 @@ layout: page
             imageInput.value = '';
             imagePreview.style.display = 'none';
             uploadText.style.display = 'block';
-            analyzeBtn.disabled = true;
-            result.textContent = '';
+            analyzeBtn.style.display = 'none';
+            resultDiv.textContent = '';
             selectedFile = null;
         });
     </script>
