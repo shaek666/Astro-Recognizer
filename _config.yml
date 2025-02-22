@@ -1,4 +1,9 @@
-remote_theme: abhinavs/moonwalk@v5.1.23  # Pin specific theme version
+theme: jekyll-theme-primer  # GitHub's native theme
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+
+remote_theme: abhinavs/moonwalk@5.1.0  # Pin specific theme version
 plugins:
   - jekyll-remote-theme
   - jekyll-seo-tag
