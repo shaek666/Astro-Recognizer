@@ -3,14 +3,13 @@ title: Astro Recognizer
 layout: page
 ---
 
-<p><a href="{{ site.baseurl }}/">Home</a> | <a href="{{ site.baseurl }}/astro_recognizer">Classifier</a></p>
+<!-- <p><a href="{{ site.baseurl }}/">Home</a> | <a href="{{ site.baseurl }}/astro_recognizer">Classifier</a></p>
 
 <input id="image-input" type="file">
 <div id="image-preview"></div>
 <div id="loading" style="display: none;">Analyzing...</div>
 <div id="result"></div>
 
-<!-- Back to Home Button -->
 <div style="margin-top: 20px;">
   <a href="{{ site.baseurl }}/" style="
     display: inline-block;
@@ -24,62 +23,6 @@ layout: page
     ← Back to Home
   </a>
 </div>
-
-<!-- <script type="module">
-  // Import the Gradio client
-  import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
-
-  // Get references to HTML elements
-  const imageInput = document.getElementById("image-input");
-  const imagePreview = document.getElementById("image-preview");
-  const resultDiv = document.getElementById("result");
-  const loadingDiv = document.getElementById("loading");
-
-  // Handle file input change
-  imageInput.addEventListener("change", async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // Display the uploaded image
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        imagePreview.src = e.target.result;
-        imagePreview.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-
-      // Show loading indicator
-      loadingDiv.style.display = "block";
-      resultDiv.textContent = "";
-
-      try {
-        // Connect to the Gradio app
-        console.log("Connecting to Gradio app...");
-        const client = await Client.connect("nosttradamus/astro-recognizer");
-        console.log("Connected to Gradio app!");
-
-        // Convert the file to a blob
-        const imageBlob = new Blob([file], { type: file.type });
-        console.log("Image converted to blob:", imageBlob);
-
-        // Make the prediction
-        console.log("Making prediction...");
-        const result = await client.predict("/predict", {
-          image: imageBlob,
-        });
-        console.log("Prediction result:", result);
-
-        // Display the result
-        resultDiv.textContent = `Prediction: ${JSON.stringify(result.data)}`;
-      } catch (error) {
-        console.error("Error calling the API:", error);
-        resultDiv.textContent = "An error occurred. Please try again.";
-      } finally {
-        // Hide loading indicator
-        loadingDiv.style.display = "none";
-      }
-    }
-  });
-</script> -->
 
 <script type="module">
   // Import the Gradio client
@@ -144,4 +87,192 @@ layout: page
       }
     }
   });
-</script>
+</script> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astro Recognizer</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
+    <style>
+        /* Psychedelic cosmic background */
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            text-align: center;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            animation: neon-flicker 5s infinite alternate ease-in-out;
+        }
+
+        @keyframes neon-flicker {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.2); }
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #00ffcc, 0 0 20px #ff00ff, 0 0 30px #ff0000;
+            animation: glitch 1.5s infinite;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffcc; }
+            50% { text-shadow: 0 0 15px #ff0000, 0 0 30px #0000ff; }
+            100% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffcc; }
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        input[type="file"]:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #image-preview {
+            max-width: 100%;
+            margin-top: 20px;
+            border: 3px solid #fff;
+            box-shadow: 0 0 15px #ff00ff;
+        }
+
+        #loading {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+
+        #result {
+            font-size: 2rem;
+            margin-top: 20px;
+            text-shadow: 0 0 10px #00ffcc, 0 0 20px #ff00ff;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, #ff00ff, #00ffff);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ffcc;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .button:hover {
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+            transform: scale(1.1);
+        }
+
+        /* Floating stars animation */
+        @keyframes move-stars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100vh); }
+        }
+
+        .stars {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: white;
+            animation: move-stars 10s linear infinite;
+            opacity: 0.8;
+        }
+
+        /* Generate 50 random stars */
+        .stars:nth-child(odd) { animation-duration: 12s; }
+        .stars:nth-child(even) { animation-duration: 8s; }
+    </style>
+</head>
+<body>
+
+    <h1>🌌 Astro Recognizer 🚀</h1>
+    
+    <input id="image-input" type="file">
+    <div id="image-preview"></div>
+    <div id="loading" style="display: none;">🔄 Analyzing...</div>
+    <div id="result"></div>
+
+    <button class="button" onclick="location.reload()">🔄 Try Another Image</button>
+
+    <!-- Back to Home Button -->
+    <button class="button" onclick="window.location.href='/'">← Back to Home</button>
+
+    <!-- Floating stars -->
+    <script>
+        for (let i = 0; i < 50; i++) {
+            let star = document.createElement("div");
+            star.className = "stars";
+            star.style.left = Math.random() * 100 + "vw";
+            star.style.top = Math.random() * 100 + "vh";
+            document.body.appendChild(star);
+        }
+    </script>
+
+    <script type="module">
+        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+
+        const imageInput = document.getElementById("image-input");
+        const imagePreview = document.getElementById("image-preview");
+        const resultDiv = document.getElementById("result");
+        const loadingDiv = document.getElementById("loading");
+
+        imageInput.addEventListener("change", async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+
+                loadingDiv.style.display = "block";
+                resultDiv.textContent = "";
+
+                try {
+                    const client = await Client.connect("nosttradamus/astro-recognizer");
+                    const imageBlob = new Blob([file], { type: file.type });
+                    const result = await client.predict("/predict", { image: imageBlob });
+
+                    if (result.data.length > 0 && result.data[0].confidences.length > 0) {
+                        const highestConfidence = result.data[0].confidences.reduce((max, item) => 
+                            item.confidence > max.confidence ? item : max, 
+                            result.data[0].confidences[0]
+                        );
+                        resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
+                    } else {
+                        resultDiv.textContent = "No prediction available.";
+                    }
+                } catch (error) {
+                    resultDiv.textContent = "Error, try again!";
+                } finally {
+                    loadingDiv.style.display = "none";
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
