@@ -93,106 +93,85 @@ layout: page
     const file = event.target.files[0];
     if (!file) return;
 
-    // Reset previous state
+    // Reset UI
     imagePreview.innerHTML = '';
     resultDiv.textContent = '';
     loadingDiv.style.display = "block";
 
     try {
-      // Display image preview
+      // Show image preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; margin: 15px 0; border: 1px solid #ddd;">`;
+        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; margin: 15px 0;">`;
       };
       reader.readAsDataURL(file);
 
-      // API Connection with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-      const client = await Client.connect("nosttradamus/astro-recognizer", {
-        hf_token: null, // Add your HF token here if needed
-        signal: controller.signal
-      });
-
+      // API Connection
+      const client = await Client.connect("nosttradamus/astro-recognizer");
       const result = await client.predict("/predict", {
         image: new Blob([file], { type: file.type })
       });
 
-      clearTimeout(timeoutId);
-
-      // Debugging: Log full response structure
-      console.log("API Response Hierarchy:", {
-        data: result?.data,
-        firstLevel: result?.data?.[0],
-        secondLevel: result?.data?.[0]?.[0]
-      });
+      console.log("FULL API RESPONSE:", result);
 
       // Validate response structure
-      if (!Array.isArray(result?.data)) {
-        throw new Error("Invalid root response format");
-      }
-
+      if (!result?.data) throw new Error("Empty API response");
+      if (!Array.isArray(result.data)) throw new Error("Root response not array");
+      
       const firstOutput = result.data[0];
-      if (!Array.isArray(firstOutput)) {
-        throw new Error("First output level is not an array");
+      if (typeof firstOutput !== 'object' || firstOutput === null) {
+        throw new Error("First output is not an object");
       }
 
-      const predictions = firstOutput[0];
+      const predictions = firstOutput.data; // Changed to object property access
       if (!Array.isArray(predictions)) {
-        throw new Error("Predictions array not found in response");
+        console.error("Invalid predictions format:", predictions);
+        throw new Error("Predictions not in array format");
       }
 
-      // Process valid predictions
+      // Process predictions
       const validPredictions = predictions
-        .filter(p => typeof p === 'object' && 'tibel' in p && 'confidence' in p)
+        .filter(p => p?.tibel?.trim() && !isNaN(p?.confidence))
         .sort((a, b) => b.confidence - a.confidence);
 
       if (validPredictions.length === 0) {
-        throw new Error("No valid predictions in array");
+        throw new Error("No valid predictions found");
       }
 
-      // Format the label
-      const rawLabel = validPredictions[0].tibel;
-      const cleanLabel = rawLabel
-        .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between camelCase
-        .replace(/\b\w/g, c => c.toUpperCase()) // Capitalize first letters
-        .replace(/\s+/g, ' ') // Collapse multiple spaces
-        .trim();
+      // Format output
+      const cleanLabel = validPredictions[0].tibel
+        .replace(/([a-z])([A-Z])/g, '$1 $2') // Fix spacing
+        .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize
 
       resultDiv.innerHTML = `
         <div style="
-          padding: 15px;
-          margin-top: 20px;
+          padding: 12px;
+          margin: 15px 0;
           background: #f6f8fa;
-          border: 1px solid #e1e4e8;
           border-radius: 6px;
+          border: 1px solid #e1e4e8;
         ">
-          <strong style="color: #0366d6;">Prediction:</strong> 
-          ${cleanLabel}
+          🚀 Prediction: <strong style="color: #0366d6;">${cleanLabel}</strong>
         </div>
       `;
 
     } catch (error) {
-      console.error("Error Breakdown:", {
+      console.error("Error Details:", {
         error,
-        name: error.name,
-        message: error.message,
-        stack: error.stack
+        response: result?.data,
+        predictions: result?.data?.[0]?.data
       });
-
+      
       resultDiv.innerHTML = `
         <div style="
-          padding: 15px;
-          margin-top: 20px;
-          background: #fff8f8;
-          border: 1px solid #ffd6d6;
-          color: #cb2431;
+          padding: 12px;
+          margin: 15px 0;
+          background: #ffebee;
           border-radius: 6px;
+          border: 1px solid #ffcdd2;
+          color: #c62828;
         ">
-          ${error.message.includes('aborted') ? 
-            '⌛ Timeout - Try a smaller image' : 
-            '⚠️ Prediction Failed - Check console'}
+          ⚠️ Error: ${error.message}
         </div>
       `;
 
