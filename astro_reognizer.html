@@ -1,0 +1,121 @@
+<!-- ---
+title: Astro Reognizer
+layout: page
+---
+
+<input id="photo" type="file">
+<div id="results"></div>
+<script>
+        import { Client } from "@gradio/client";
+
+    const response_0 = await fetch("https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png");
+    const exampleImage = await response_0.blob();
+                            
+    const client = await Client.connect("nosttradamus/astro-recognizer");
+    const result = await client.predict("/predict", { 
+                    image: exampleImage, 
+    });
+
+    console.log(result.data);
+</script> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astro Recognizer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    #image-preview {
+      max-width: 100%;
+      height: auto;
+      margin-top: 20px;
+    }
+    #loading {
+      display: none;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Astro Recognizer</h1>
+  <p>Upload an image to recognize astrological symbols:</p>
+  
+  <!-- File input for image upload -->
+  <input type="file" id="image-input" accept="image/*">
+  
+  <!-- Image preview -->
+  <img id="image-preview" src="#" alt="Image Preview" style="display: none;">
+  
+  <!-- Loading indicator -->
+  <div id="loading">Loading...</div>
+  
+  <!-- Result display -->
+  <div id="result"></div>
+
+  <script type="module">
+    // Import the Gradio client
+    import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+
+    // Get references to HTML elements
+    const imageInput = document.getElementById("image-input");
+    const imagePreview = document.getElementById("image-preview");
+    const resultDiv = document.getElementById("result");
+    const loadingDiv = document.getElementById("loading");
+
+    // Handle file input change
+    imageInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        // Display the uploaded image
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imagePreview.src = e.target.result;
+          imagePreview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+
+        // Show loading indicator
+        loadingDiv.style.display = "block";
+        resultDiv.textContent = "";
+
+        try {
+          // Connect to the Gradio app
+          console.log("Connecting to Gradio app...");
+          const client = await Client.connect("nosttradamus/astro-recognizer");
+          console.log("Connected to Gradio app!");
+
+          // Convert the file to a blob
+          const imageBlob = new Blob([file], { type: file.type });
+          console.log("Image converted to blob:", imageBlob);
+
+          // Make the prediction
+          console.log("Making prediction...");
+          const result = await client.predict("/predict", {
+            image: imageBlob,
+          });
+          console.log("Prediction result:", result);
+
+          // Display the result
+          resultDiv.textContent = `Prediction: ${JSON.stringify(result.data)}`;
+        } catch (error) {
+          console.error("Error calling the API:", error);
+          resultDiv.textContent = "An error occurred. Please try again.";
+        } finally {
+          // Hide loading indicator
+          loadingDiv.style.display = "none";
+        }
+      }
+    });
+  </script>
+</body>
+</html>
