@@ -114,32 +114,14 @@ layout: page
 
       console.log("RAW API RESPONSE:", result);
 
-      // Adaptive response handling
-      let predictions;
-      
-      // Try different response structures
-      if (Array.isArray(result?.data?.[0]?.[0])) {
-        // Original array format
-        predictions = result.data[0][0];
-      } else if (Array.isArray(result?.data?.[0]?.data)) {
-        // Object-with-data format
-        predictions = result.data[0].data;
-      } else if (Array.isArray(result?.data)) {
-        // Direct predictions array
-        predictions = result.data;
-      } else {
-        // Final fallback attempt
-        const flatData = Object.values(result.data).flat(Infinity);
-        predictions = flatData.find(Array.isArray);
-      }
-
-      if (!Array.isArray(predictions)) {
-        console.error("Unsupported response format:", result?.data);
-        throw new Error("API returned unexpected format");
+      // Handle the actual response structure from your logs
+      const rawPredictions = result.data[0];
+      if (!Array.isArray(rawPredictions)) {
+        throw new Error("Invalid predictions format in response");
       }
 
       // Process predictions
-      const validPredictions = predictions
+      const validPredictions = rawPredictions
         .filter(p => p?.tibel?.trim() && typeof p?.confidence === 'number')
         .sort((a, b) => b.confidence - a.confidence);
 
@@ -149,63 +131,45 @@ layout: page
 
       // Format output
       const cleanLabel = validPredictions[0].tibel
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/\b\w/g, c => c.toUpperCase());
+        .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between words
+        .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize first letters
 
       resultDiv.innerHTML = `
         <div class="prediction-result">
-          <span class="emoji">🔭</span>
-          <strong>Prediction:</strong> 
-          <span class="label">${cleanLabel}</span>
+          🪐 Prediction: <strong>${cleanLabel}</strong>
         </div>
       `;
 
     } catch (error) {
-      console.error("Error Context:", {
-        error,
-        response: result?.data,
-        predictions
-      });
-      
+      console.error("Error Details:", error);
       resultDiv.innerHTML = `
         <div class="error-message">
-          <span class="emoji">⚠️</span>
-          ${error.message.includes('unexpected format') 
-            ? 'API format changed - contact support'
-            : error.message}
+          ⚠️ Error: ${error.message}
         </div>
       `;
-
     } finally {
       loadingDiv.style.display = "none";
     }
   });
 
-  // Add basic CSS styling
+  // Add basic styling
   const style = document.createElement('style');
   style.textContent = `
     .prediction-result {
       padding: 15px;
       margin: 20px 0;
-      background: #f8f9fa;
+      background: #f6f8fa;
       border: 1px solid #e1e4e8;
-      border-radius: 8px;
-      font-size: 18px;
+      border-radius: 6px;
+      font-size: 16px;
     }
     .error-message {
       padding: 15px;
       margin: 20px 0;
-      background: #fff5f5;
-      border: 1px solid #ffd6d6;
-      border-radius: 8px;
-      color: #cf222e;
-    }
-    .emoji {
-      margin-right: 10px;
-    }
-    .label {
-      color: #0969da;
-      font-weight: 600;
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      border-radius: 6px;
+      color: #c62828;
     }
   `;
   document.head.appendChild(style);
