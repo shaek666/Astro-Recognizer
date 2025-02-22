@@ -1,4 +1,4 @@
----
+<!-- ---
 title: Astro Recognizer
 layout: page
 ---
@@ -55,6 +55,44 @@ layout: page
           resultDiv.textContent = "An error occurred. Please try again.";
         } finally {
           // Hide loading indicator
+          loadingDiv.style.display = "none";
+        }
+      }
+    });
+</script> --->
+
+---
+title: Classifier
+layout: default
+permalink: /classifier/
+---
+
+<input id="image-input" type="file">
+<div id="image-preview"></div>
+<div id="loading" style="display: none;">Analyzing...</div>
+<div id="result"></div>
+
+<script type="module">
+    import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+    const imageInput = document.getElementById("image-input");
+    const resultDiv = document.getElementById("result");
+    const loadingDiv = document.getElementById("loading");
+
+    imageInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        loadingDiv.style.display = "block";
+        resultDiv.textContent = "";
+        
+        try {
+          const client = await Client.connect("nosttradamus/astro-recognizer");
+          const imageBlob = new Blob([file], { type: file.type });
+          const result = await client.predict("/predict", { image: imageBlob });
+          resultDiv.textContent = `Prediction: ${result.data}`;
+        } catch (error) {
+          console.error(error);
+          resultDiv.textContent = "Error: ${error.message}";
+        } finally {
           loadingDiv.style.display = "none";
         }
       }

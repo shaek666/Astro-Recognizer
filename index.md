@@ -1,9 +1,11 @@
 ---
 title: Home
-layout: page
+layout: default
 ---
 
-# Image Recognizer
+# Astro Recognizer
+
+[Try the Classifier →](/classifier/)
 
 Can classify 17 different types of astronomical elements
 
