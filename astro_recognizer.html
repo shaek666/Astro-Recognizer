@@ -97,62 +97,37 @@ layout: page
     <title>Astro Recognizer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
     <style>
-        /* Cosmic background animation */
         body {
             font-family: 'Orbitron', sans-serif;
-            background: radial-gradient(circle at 50% 50%, #000000 0%, #1b0035 30%, #3a005f 70%);
+            background: radial-gradient(circle, #000000, #1b0035, #3a005f);
             color: white;
             text-align: center;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
         h1 {
             font-size: 3rem;
-            text-transform: uppercase;
             text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
             margin: 2rem 0;
-            animation: title-glow 2s ease-in-out infinite;
         }
 
-        @keyframes title-glow {
-            0%, 100% { text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff; }
-            50% { text-shadow: 0 0 30px #00ffcc, 0 0 60px #ff00ff; }
-        }
-
-        /* Upload container */
         .upload-container {
-            position: relative;
             width: 80%;
             max-width: 600px;
             margin: 2rem auto;
-            padding: 4rem 2rem;
+            padding: 2rem;
             border: 3px dashed #ff00ff;
             border-radius: 15px;
-            background: rgba(0, 0, 0, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .upload-container:hover {
-            background: rgba(0, 0, 0, 0.5);
-            box-shadow: 0 0 30px #ff00ff55;
+            background: rgba(0, 0, 0, 0.3);
         }
 
-        .upload-container.dragover {
-            border-color: #00ffff;
-            background: rgba(0, 255, 255, 0.1);
-        }
-
-        .upload-text {
-            font-size: 1.5rem;
-            text-shadow: 0 0 10px #00ffcc;
-            pointer-events: none;
-        }
-
-        /* Image preview */
         #image-preview {
             display: none;
             max-width: 80%;
@@ -162,7 +137,6 @@ layout: page
             box-shadow: 0 0 30px #00ffff88;
         }
 
-        /* Buttons */
         .button-group {
             display: flex;
             gap: 20px;
@@ -172,7 +146,6 @@ layout: page
 
         .action-button {
             padding: 12px 30px;
-            font-size: 1.1rem;
             background: linear-gradient(45deg, #ff00ff, #00ffff);
             border: none;
             border-radius: 8px;
@@ -182,17 +155,16 @@ layout: page
             text-decoration: none;
         }
 
-        .action-button:hover {
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-button:hover:not(:disabled) {
             transform: scale(1.05);
             box-shadow: 0 0 25px #ff00ff;
         }
 
-        #analyze-btn {
-            display: none;
-            margin: 20px auto;
-        }
-
-        /* Loading animation */
         #loading {
             display: none;
             font-size: 1.5rem;
@@ -205,7 +177,6 @@ layout: page
             50% { opacity: 0.5; }
         }
 
-        /* Result styling */
         #result {
             font-size: 1.8rem;
             margin: 20px 0;
@@ -217,12 +188,12 @@ layout: page
     <h1>🌌 Astro Recognizer 🔭</h1>
 
     <div class="upload-container" id="uploadContainer">
-        <div class="upload-text">Drag and Drop Image<br>or Click to Upload</div>
+        <div id="uploadText">Drag and Drop Image<br>or Click to Upload</div>
         <input type="file" id="imageInput" accept="image/*" hidden>
         <img id="imagePreview" src="#" alt="Preview">
-        <button class="action-button" id="analyzeBtn">🚀 Start Analyzing</button>
     </div>
 
+    <button class="action-button" id="analyzeBtn" disabled>🚀 Start Analyzing</button>
     <div id="loading">Scanning...</div>
     <div id="result"></div>
 
@@ -241,22 +212,23 @@ layout: page
         const loading = document.getElementById('loading');
         const result = document.getElementById('result');
         const resetBtn = document.getElementById('resetBtn');
+        const uploadText = document.getElementById('uploadText');
 
         let selectedFile = null;
 
         // Drag and drop handlers
         container.addEventListener('dragover', (e) => {
             e.preventDefault();
-            container.classList.add('dragover');
+            container.style.borderColor = '#00ffff';
         });
 
         container.addEventListener('dragleave', () => {
-            container.classList.remove('dragover');
+            container.style.borderColor = '#ff00ff';
         });
 
         container.addEventListener('drop', (e) => {
             e.preventDefault();
-            container.classList.remove('dragover');
+            container.style.borderColor = '#ff00ff';
             handleFile(e.dataTransfer.files[0]);
         });
 
@@ -273,7 +245,8 @@ layout: page
                 reader.onload = (e) => {
                     imagePreview.src = e.target.result;
                     imagePreview.style.display = 'block';
-                    analyzeBtn.style.display = 'block';
+                    uploadText.style.display = 'none';
+                    analyzeBtn.disabled = false;
                 };
                 reader.readAsDataURL(file);
             }
@@ -281,6 +254,8 @@ layout: page
 
         // Analyze button handler
         analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
             loading.style.display = 'block';
             result.textContent = '';
             analyzeBtn.disabled = true;
@@ -290,17 +265,19 @@ layout: page
                 const imageBlob = new Blob([selectedFile], { type: selectedFile.type });
                 const response = await client.predict("/predict", { image: imageBlob });
 
-                if (response.data?.confidences?.length > 0) {
-                    const topResult = response.data.confidences.reduce((max, curr) => 
+                // Updated response handling based on Gradio structure
+                if (response.data && response.data.confidences) {
+                    const predictions = response.data.confidences;
+                    const topResult = predictions.reduce((max, curr) => 
                         curr.confidence > max.confidence ? curr : max
                     );
-                    result.textContent = `Result: ${topResult.label}`;
+                    result.textContent = `Prediction: ${topResult.label}`;
                 } else {
                     result.textContent = 'No clear prediction found';
                 }
             } catch (error) {
-                result.textContent = 'Error analyzing image';
-                console.error(error);
+                console.error('Prediction error:', error);
+                result.textContent = 'Error analyzing image - Please try again';
             } finally {
                 loading.style.display = 'none';
                 analyzeBtn.disabled = false;
@@ -311,7 +288,8 @@ layout: page
         resetBtn.addEventListener('click', () => {
             imageInput.value = '';
             imagePreview.style.display = 'none';
-            analyzeBtn.style.display = 'none';
+            uploadText.style.display = 'block';
+            analyzeBtn.disabled = true;
             result.textContent = '';
             selectedFile = null;
         });
