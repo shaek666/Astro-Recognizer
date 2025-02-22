@@ -97,7 +97,7 @@ layout: page
     <title>Astro Recognizer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
     <style>
-        /* Dark, elegant space-themed background */
+        /* Dark, futuristic cosmic background */
         body {
             font-family: 'Orbitron', sans-serif;
             background: radial-gradient(circle, #000000, #0d0d0d, #1a1a1a);
@@ -109,9 +109,16 @@ layout: page
         }
 
         h1 {
-            font-size: 2.8rem;
+            font-size: 3rem;
             text-transform: uppercase;
-            text-shadow: 0 0 12px #ffffff, 0 0 20px #aaaaaa;
+            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
+            animation: glitch 1.5s infinite alternate;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
+            50% { text-shadow: 0 0 20px #ff0000, 0 0 40px #0000ff; }
+            100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
         }
 
         /* Elegant file input button */
@@ -120,7 +127,7 @@ layout: page
             padding: 12px 30px;
             font-size: 1.2rem;
             background: rgba(255, 255, 255, 0.1);
-            color: #ddd;
+            color: white;
             border: 2px solid #555;
             border-radius: 8px;
             cursor: pointer;
@@ -144,7 +151,7 @@ layout: page
             margin-top: 20px;
             border-radius: 10px;
             border: 2px solid #444;
-            box-shadow: 0 0 12px #222;
+            box-shadow: 0 0 15px #ff00ff;
         }
 
         #loading {
@@ -166,16 +173,16 @@ layout: page
             margin: 20px auto;
             padding: 12px 30px;
             font-size: 1.2rem;
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(90deg, #222, #555);
             color: white;
-            border: 2px solid #666;
+            border: 2px solid #777;
             cursor: pointer;
             border-radius: 8px;
             transition: all 0.3s ease-in-out;
         }
 
         .button:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: linear-gradient(90deg, #333, #777);
             border-color: white;
         }
 
@@ -184,6 +191,21 @@ layout: page
             display: flex;
             justify-content: center;
             gap: 20px;
+        }
+
+        /* Floating stars animation */
+        @keyframes move-stars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100vh); }
+        }
+
+        .stars {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: white;
+            animation: move-stars 10s linear infinite;
+            opacity: 0.8;
         }
 
     </style>
@@ -205,6 +227,17 @@ layout: page
         <button class="button" onclick="location.reload()">🔄 Try Another Image</button>
         <button class="button" onclick="window.location.href='/'">← Back to Home</button>
     </div>
+
+    <!-- Floating stars -->
+    <script>
+        for (let i = 0; i < 50; i++) {
+            let star = document.createElement("div");
+            star.className = "stars";
+            star.style.left = Math.random() * 100 + "vw";
+            star.style.top = Math.random() * 100 + "vh";
+            document.body.appendChild(star);
+        }
+    </script>
 
     <script type="module">
         import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
