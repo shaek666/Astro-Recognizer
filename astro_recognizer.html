@@ -97,44 +97,40 @@ layout: page
     <title>Astro Recognizer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
     <style>
-        /* Psychedelic cosmic background */
+        /* Dark psychedelic background */
         body {
             font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            background: radial-gradient(circle, #000000, #1b0035, #3a005f);
             color: white;
             text-align: center;
             overflow: hidden;
             margin: 0;
             padding: 0;
-            animation: neon-flicker 5s infinite alternate ease-in-out;
-        }
-
-        @keyframes neon-flicker {
-            0% { filter: brightness(1); }
-            100% { filter: brightness(1.2); }
         }
 
         h1 {
             font-size: 3rem;
             text-transform: uppercase;
-            text-shadow: 0 0 10px #00ffcc, 0 0 20px #ff00ff, 0 0 30px #ff0000;
+            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff, 0 0 45px #ff0000;
             animation: glitch 1.5s infinite;
         }
 
         @keyframes glitch {
-            0% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffcc; }
-            50% { text-shadow: 0 0 15px #ff0000, 0 0 30px #0000ff; }
-            100% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffcc; }
+            0% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
+            50% { text-shadow: 0 0 20px #ff0000, 0 0 40px #0000ff; }
+            100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
         }
 
         input[type="file"] {
-            padding: 10px;
+            padding: 12px;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid #fff;
             border-radius: 5px;
             color: white;
             cursor: pointer;
             transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
         }
 
         input[type="file"]:hover {
@@ -142,8 +138,11 @@ layout: page
         }
 
         #image-preview {
-            max-width: 100%;
+            display: none;
+            max-width: 90%;
+            height: auto;
             margin-top: 20px;
+            border-radius: 10px;
             border: 3px solid #fff;
             box-shadow: 0 0 15px #ff00ff;
         }
@@ -152,6 +151,7 @@ layout: page
             font-size: 1.5rem;
             margin-top: 20px;
             animation: pulse 1s infinite;
+            display: none;
         }
 
         @keyframes pulse {
@@ -163,13 +163,13 @@ layout: page
         #result {
             font-size: 2rem;
             margin-top: 20px;
-            text-shadow: 0 0 10px #00ffcc, 0 0 20px #ff00ff;
+            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
         }
 
         .button {
             display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
+            margin: 20px 10px;
+            padding: 12px 25px;
             font-size: 1.2rem;
             background: linear-gradient(90deg, #ff00ff, #00ffff);
             color: white;
@@ -183,6 +183,13 @@ layout: page
         .button:hover {
             box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
             transform: scale(1.1);
+        }
+
+        .button-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
         }
 
         /* Floating stars animation */
@@ -199,10 +206,6 @@ layout: page
             animation: move-stars 10s linear infinite;
             opacity: 0.8;
         }
-
-        /* Generate 50 random stars */
-        .stars:nth-child(odd) { animation-duration: 12s; }
-        .stars:nth-child(even) { animation-duration: 8s; }
     </style>
 </head>
 <body>
@@ -210,14 +213,14 @@ layout: page
     <h1>🌌 Astro Recognizer 🚀</h1>
     
     <input id="image-input" type="file">
-    <div id="image-preview"></div>
-    <div id="loading" style="display: none;">🔄 Analyzing...</div>
+    <img id="image-preview" src="#" alt="Uploaded Image Preview">
+    <div id="loading">🔄 Analyzing...</div>
     <div id="result"></div>
 
-    <button class="button" onclick="location.reload()">🔄 Try Another Image</button>
-
-    <!-- Back to Home Button -->
-    <button class="button" onclick="window.location.href='/'">← Back to Home</button>
+    <div class="button-container">
+        <button class="button" onclick="location.reload()">🔄 Try Another Image</button>
+        <button class="button" onclick="window.location.href='/'">← Back to Home</button>
+    </div>
 
     <!-- Floating stars -->
     <script>
@@ -241,6 +244,7 @@ layout: page
         imageInput.addEventListener("change", async (event) => {
             const file = event.target.files[0];
             if (file) {
+                // Show the image preview
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     imagePreview.src = e.target.result;
