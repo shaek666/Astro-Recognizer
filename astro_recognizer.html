@@ -99,39 +99,48 @@ layout: page
     loadingDiv.style.display = "block";
 
     try {
-      // Show image preview
+      // Display preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; margin: 15px 0;">`;
+        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; margin: 15px 0; border-radius: 6px;">`;
       };
       reader.readAsDataURL(file);
 
-      // API Connection
+      // API Call
       const client = await Client.connect("nosttradamus/astro-recognizer");
       const result = await client.predict("/predict", {
         image: new Blob([file], { type: file.type })
       });
 
-      console.log("FULL API RESPONSE:", result);
+      console.log("RAW API RESPONSE:", result);
 
-      // Validate response structure
-      if (!result?.data) throw new Error("Empty API response");
-      if (!Array.isArray(result.data)) throw new Error("Root response not array");
+      // Adaptive response handling
+      let predictions;
       
-      const firstOutput = result.data[0];
-      if (typeof firstOutput !== 'object' || firstOutput === null) {
-        throw new Error("First output is not an object");
+      // Try different response structures
+      if (Array.isArray(result?.data?.[0]?.[0])) {
+        // Original array format
+        predictions = result.data[0][0];
+      } else if (Array.isArray(result?.data?.[0]?.data)) {
+        // Object-with-data format
+        predictions = result.data[0].data;
+      } else if (Array.isArray(result?.data)) {
+        // Direct predictions array
+        predictions = result.data;
+      } else {
+        // Final fallback attempt
+        const flatData = Object.values(result.data).flat(Infinity);
+        predictions = flatData.find(Array.isArray);
       }
 
-      const predictions = firstOutput.data; // Changed to object property access
       if (!Array.isArray(predictions)) {
-        console.error("Invalid predictions format:", predictions);
-        throw new Error("Predictions not in array format");
+        console.error("Unsupported response format:", result?.data);
+        throw new Error("API returned unexpected format");
       }
 
       // Process predictions
       const validPredictions = predictions
-        .filter(p => p?.tibel?.trim() && !isNaN(p?.confidence))
+        .filter(p => p?.tibel?.trim() && typeof p?.confidence === 'number')
         .sort((a, b) => b.confidence - a.confidence);
 
       if (validPredictions.length === 0) {
@@ -140,38 +149,30 @@ layout: page
 
       // Format output
       const cleanLabel = validPredictions[0].tibel
-        .replace(/([a-z])([A-Z])/g, '$1 $2') // Fix spacing
-        .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/\b\w/g, c => c.toUpperCase());
 
       resultDiv.innerHTML = `
-        <div style="
-          padding: 12px;
-          margin: 15px 0;
-          background: #f6f8fa;
-          border-radius: 6px;
-          border: 1px solid #e1e4e8;
-        ">
-          🚀 Prediction: <strong style="color: #0366d6;">${cleanLabel}</strong>
+        <div class="prediction-result">
+          <span class="emoji">🔭</span>
+          <strong>Prediction:</strong> 
+          <span class="label">${cleanLabel}</span>
         </div>
       `;
 
     } catch (error) {
-      console.error("Error Details:", {
+      console.error("Error Context:", {
         error,
         response: result?.data,
-        predictions: result?.data?.[0]?.data
+        predictions
       });
       
       resultDiv.innerHTML = `
-        <div style="
-          padding: 12px;
-          margin: 15px 0;
-          background: #ffebee;
-          border-radius: 6px;
-          border: 1px solid #ffcdd2;
-          color: #c62828;
-        ">
-          ⚠️ Error: ${error.message}
+        <div class="error-message">
+          <span class="emoji">⚠️</span>
+          ${error.message.includes('unexpected format') 
+            ? 'API format changed - contact support'
+            : error.message}
         </div>
       `;
 
@@ -179,4 +180,33 @@ layout: page
       loadingDiv.style.display = "none";
     }
   });
+
+  // Add basic CSS styling
+  const style = document.createElement('style');
+  style.textContent = `
+    .prediction-result {
+      padding: 15px;
+      margin: 20px 0;
+      background: #f8f9fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 8px;
+      font-size: 18px;
+    }
+    .error-message {
+      padding: 15px;
+      margin: 20px 0;
+      background: #fff5f5;
+      border: 1px solid #ffd6d6;
+      border-radius: 8px;
+      color: #cf222e;
+    }
+    .emoji {
+      margin-right: 10px;
+    }
+    .label {
+      color: #0969da;
+      font-weight: 600;
+    }
+  `;
+  document.head.appendChild(style);
 </script>
