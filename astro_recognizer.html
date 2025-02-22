@@ -25,7 +25,7 @@ layout: page
   </a>
 </div>
 
-<script type="module">
+<!-- <script type="module">
   // Import the Gradio client
   import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
@@ -70,6 +70,61 @@ layout: page
 
         // Display the result
         resultDiv.textContent = `Prediction: ${JSON.stringify(result.data)}`;
+      } catch (error) {
+        console.error("Error calling the API:", error);
+        resultDiv.textContent = "An error occurred. Please try again.";
+      } finally {
+        // Hide loading indicator
+        loadingDiv.style.display = "none";
+      }
+    }
+  });
+</script> -->
+
+<script type="module">
+  // Import the Gradio client
+  import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+
+  // Get references to HTML elements
+  const imageInput = document.getElementById("image-input");
+  const imagePreview = document.getElementById("image-preview");
+  const resultDiv = document.getElementById("result");
+  const loadingDiv = document.getElementById("loading");
+
+  // Handle file input change
+  imageInput.addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Display the uploaded image
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; margin-top: 15px;">`;
+        imagePreview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+
+      // Show loading indicator
+      loadingDiv.style.display = "block";
+      resultDiv.textContent = "";
+
+      try {
+        // Connect to the Gradio app
+        const client = await Client.connect("nosttradamus/astro-recognizer");
+        
+        // Convert the file to a blob
+        const imageBlob = new Blob([file], { type: file.type });
+
+        // Make the prediction
+        const result = await client.predict("/predict", { image: imageBlob });
+
+        // Extract and display only the top prediction
+        const topPrediction = result.data[0][0].label;
+        resultDiv.innerHTML = `
+          <h3 style="margin-top: 20px; color: #0366d6;">
+            Prediction: ${topPrediction}
+          </h3>
+        `;
+
       } catch (error) {
         console.error("Error calling the API:", error);
         resultDiv.textContent = "An error occurred. Please try again.";
