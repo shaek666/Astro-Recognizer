@@ -97,209 +97,224 @@ layout: page
     <title>Astro Recognizer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
     <style>
-        /* General Styling */
+        /* Cosmic background animation */
         body {
             font-family: 'Orbitron', sans-serif;
-            background: radial-gradient(circle, #000000, #1b0035, #3a005f);
+            background: radial-gradient(circle at 50% 50%, #000000 0%, #1b0035 30%, #3a005f 70%);
             color: white;
             text-align: center;
-            overflow: hidden;
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         h1 {
             font-size: 3rem;
             text-transform: uppercase;
-            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff, 0 0 45px #ff0000;
-            animation: glitch 1.5s infinite;
-            margin-bottom: 50px;
+            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
+            margin: 2rem 0;
+            animation: title-glow 2s ease-in-out infinite;
         }
 
-        @keyframes glitch {
-            0% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
-            50% { text-shadow: 0 0 20px #ff0000, 0 0 40px #0000ff; }
-            100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
+        @keyframes title-glow {
+            0%, 100% { text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff; }
+            50% { text-shadow: 0 0 30px #00ffcc, 0 0 60px #ff00ff; }
         }
 
-        /* Styling for the upload box */
-        .upload-box {
+        /* Upload container */
+        .upload-container {
+            position: relative;
             width: 80%;
             max-width: 600px;
-            margin: 0 auto;
-            padding: 40px;
-            background: rgba(0, 0, 0, 0.7);
+            margin: 2rem auto;
+            padding: 4rem 2rem;
             border: 3px dashed #ff00ff;
-            border-radius: 20px;
-            color: white;
-            text-align: center;
-            font-size: 1.5rem;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
             cursor: pointer;
-            transition: all 0.3s ease-in-out;
+            transition: all 0.3s ease;
         }
 
-        .upload-box:hover {
-            background: rgba(0, 0, 0, 0.85);
-            box-shadow: 0 0 25px #ff00ff, 0 0 50px #00ffff;
+        .upload-container:hover {
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 30px #ff00ff55;
         }
 
-        /* Hiding the native file input */
-        input[type="file"] {
-            display: none;
+        .upload-container.dragover {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .upload-text {
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #00ffcc;
+            pointer-events: none;
         }
 
         /* Image preview */
         #image-preview {
             display: none;
-            max-width: 90%;
-            margin-top: 30px;
+            max-width: 80%;
+            margin: 2rem auto;
             border-radius: 15px;
             border: 3px solid #fff;
-            box-shadow: 0 0 15px #ff00ff;
+            box-shadow: 0 0 30px #00ffff88;
         }
 
-        /* Button styling */
-        .button {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background: linear-gradient(90deg, #ff00ff, #00ffff);
-            color: white;
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .action-button {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
             border: none;
+            border-radius: 8px;
+            color: white;
             cursor: pointer;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #00ffcc;
-            transition: all 0.3s ease-in-out;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
 
-        .button:hover {
-            box-shadow: 0 0 30px #ff00ff, 0 0 60px #00ffff;
-            transform: scale(1.1);
+        .action-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #ff00ff;
         }
 
-        .button-container {
-            margin-top: 50px;
-        }
-
-        #loading {
-            font-size: 1.5rem;
-            margin-top: 20px;
-            animation: pulse 1s infinite;
+        #analyze-btn {
             display: none;
+            margin: 20px auto;
+        }
+
+        /* Loading animation */
+        #loading {
+            display: none;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            animation: pulse 1s infinite;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.7; }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
+        /* Result styling */
         #result {
-            font-size: 2rem;
-            margin-top: 20px;
-            text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
+            font-size: 1.8rem;
+            margin: 20px 0;
+            text-shadow: 0 0 15px #00ffcc;
         }
     </style>
 </head>
 <body>
+    <h1>🌌 Astro Recognizer 🔭</h1>
 
-    <h1>🌌 Astro Recognizer 🚀</h1>
-
-    <!-- Unified upload box for drag and drop or file input -->
-    <div class="upload-box" id="upload-box">
-        🌌 Drag and Drop or Choose Photo
-        <input id="image-input" type="file" accept="image/*">
+    <div class="upload-container" id="uploadContainer">
+        <div class="upload-text">Drag and Drop Image<br>or Click to Upload</div>
+        <input type="file" id="imageInput" accept="image/*" hidden>
+        <img id="imagePreview" src="#" alt="Preview">
+        <button class="action-button" id="analyzeBtn">🚀 Start Analyzing</button>
     </div>
 
-    <!-- Image preview -->
-    <img id="image-preview" src="#" alt="Uploaded Image Preview">
-
-    <!-- Start analyzing button -->
-    <div class="button-container">
-        <button class="button" id="analyze-btn" disabled>🔬 Start Analyzing</button>
-    </div>
-
-    <!-- Loading and result -->
-    <div id="loading">🔄 Analyzing...</div>
+    <div id="loading">Scanning...</div>
     <div id="result"></div>
 
-    <!-- Back to home button -->
-    <div class="button-container">
-        <button class="button" id="back-home-btn" onclick="window.location.href='{{ site.baseurl }}/'">← Back to Home</button>
+    <div class="button-group">
+        <button class="action-button" id="resetBtn">🔄 Check Another Image</button>
+        <a href="{{ site.baseurl }}/" class="action-button">← Back to Home</a>
     </div>
 
-    <script>
-        // JavaScript handling file input
-        const uploadBox = document.getElementById("upload-box");
-        const imageInput = document.getElementById("image-input");
-        const imagePreview = document.getElementById("image-preview");
-        const analyzeBtn = document.getElementById("analyze-btn");
-        const loadingDiv = document.getElementById("loading");
-        const resultDiv = document.getElementById("result");
+    <script type="module">
+        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+
+        const container = document.getElementById('uploadContainer');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const resetBtn = document.getElementById('resetBtn');
 
         let selectedFile = null;
 
-        // Handle drag over and drop
-        uploadBox.addEventListener("dragover", (event) => {
-            event.preventDefault();
-            uploadBox.style.background = "rgba(0, 0, 0, 0.85)";
+        // Drag and drop handlers
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            container.classList.add('dragover');
         });
 
-        uploadBox.addEventListener("dragleave", () => {
-            uploadBox.style.background = "rgba(0, 0, 0, 0.7)";
+        container.addEventListener('dragleave', () => {
+            container.classList.remove('dragover');
         });
 
-        uploadBox.addEventListener("drop", (event) => {
-            event.preventDefault();
-            selectedFile = event.dataTransfer.files[0];
-            handleFile(selectedFile);
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            container.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
         });
 
-        // Handle file selection
-        imageInput.addEventListener("change", (event) => {
-            selectedFile = event.target.files[0];
-            handleFile(selectedFile);
+        container.addEventListener('click', () => imageInput.click());
+
+        imageInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
         });
 
-        // Handle file upload logic
         function handleFile(file) {
-            if (file) {
+            if (file && file.type.startsWith('image/')) {
+                selectedFile = file;
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     imagePreview.src = e.target.result;
-                    imagePreview.style.display = "block";
-                    analyzeBtn.disabled = false;
-                    uploadBox.style.display = "none"; // Hide the upload box after selection
+                    imagePreview.style.display = 'block';
+                    analyzeBtn.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        // Start analysis (Placeholder function)
-        analyzeBtn.addEventListener("click", async () => {
-            if (!selectedFile) return;
-
-            loadingDiv.style.display = "block";
-            resultDiv.textContent = "";
+        // Analyze button handler
+        analyzeBtn.addEventListener('click', async () => {
+            loading.style.display = 'block';
+            result.textContent = '';
+            analyzeBtn.disabled = true;
 
             try {
-                // Placeholder prediction process
-                const result = { data: [{ confidences: [{ label: "Andromeda Galaxy", confidence: 0.98 }] }] };
-                const highestConfidence = result.data[0].confidences.reduce((max, item) => item.confidence > max.confidence ? item : max, result.data[0].confidences[0]);
-                resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
+                const client = await Client.connect("nosttradamus/astro-recognizer");
+                const imageBlob = new Blob([selectedFile], { type: selectedFile.type });
+                const response = await client.predict("/predict", { image: imageBlob });
+
+                if (response.data?.confidences?.length > 0) {
+                    const topResult = response.data.confidences.reduce((max, curr) => 
+                        curr.confidence > max.confidence ? curr : max
+                    );
+                    result.textContent = `Result: ${topResult.label}`;
+                } else {
+                    result.textContent = 'No clear prediction found';
+                }
             } catch (error) {
-                resultDiv.textContent = "Error, try again!";
+                result.textContent = 'Error analyzing image';
+                console.error(error);
             } finally {
-                loadingDiv.style.display = "none";
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
             }
         });
 
-        // Back to home button
-        document.getElementById("back-home-btn").onclick = function() {
-            window.location.href = "{{ site.baseurl }}"; // Ensure it's correct based on your Jekyll config
-        }
+        // Reset button handler
+        resetBtn.addEventListener('click', () => {
+            imageInput.value = '';
+            imagePreview.style.display = 'none';
+            analyzeBtn.style.display = 'none';
+            result.textContent = '';
+            selectedFile = null;
+        });
     </script>
-
 </body>
 </html>
