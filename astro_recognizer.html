@@ -97,7 +97,7 @@ layout: page
     <title>Astro Recognizer</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
     <style>
-        /* Dark psychedelic background */
+        /* General Styling */
         body {
             font-family: 'Orbitron', sans-serif;
             background: radial-gradient(circle, #000000, #1b0035, #3a005f);
@@ -122,7 +122,7 @@ layout: page
             100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
         }
 
-        /* Unified drag-and-drop + file input box */
+        /* Styling for the upload box */
         .upload-box {
             width: 80%;
             max-width: 600px;
@@ -143,6 +143,7 @@ layout: page
             box-shadow: 0 0 25px #ff00ff, 0 0 50px #00ffff;
         }
 
+        /* Hiding the native file input */
         input[type="file"] {
             display: none;
         }
@@ -157,7 +158,7 @@ layout: page
             box-shadow: 0 0 15px #ff00ff;
         }
 
-        /* Button styles */
+        /* Button styling */
         .button {
             display: inline-block;
             margin-top: 30px;
@@ -199,28 +200,13 @@ layout: page
             margin-top: 20px;
             text-shadow: 0 0 15px #00ffcc, 0 0 30px #ff00ff;
         }
-
-        /* Floating stars animation */
-        @keyframes move-stars {
-            from { transform: translateY(0); }
-            to { transform: translateY(-100vh); }
-        }
-
-        .stars {
-            position: fixed;
-            width: 2px;
-            height: 2px;
-            background: white;
-            animation: move-stars 10s linear infinite;
-            opacity: 0.8;
-        }
     </style>
 </head>
 <body>
 
     <h1>🌌 Astro Recognizer 🚀</h1>
 
-    <!-- Drag and drop or choose file input -->
+    <!-- Unified upload box for drag and drop or file input -->
     <div class="upload-box" id="upload-box">
         🌌 Drag and Drop or Choose Photo
         <input id="image-input" type="file" accept="image/*">
@@ -229,46 +215,32 @@ layout: page
     <!-- Image preview -->
     <img id="image-preview" src="#" alt="Uploaded Image Preview">
 
-    <!-- Analyze button -->
+    <!-- Start analyzing button -->
     <div class="button-container">
         <button class="button" id="analyze-btn" disabled>🔬 Start Analyzing</button>
     </div>
 
+    <!-- Loading and result -->
     <div id="loading">🔄 Analyzing...</div>
     <div id="result"></div>
 
-    <!-- Action buttons -->
+    <!-- Back to home button -->
     <div class="button-container">
-        <button class="button" id="try-again-btn" style="display:none;">🔄 Try Another Image</button>
-        <button class="button" id="back-home-btn" onclick="window.location.href='{{ site.baseurl }}'">← Back to Home</button>
+        <button class="button" id="back-home-btn" onclick="window.location.href='{{ site.baseurl }}/'">← Back to Home</button>
     </div>
 
-    <!-- Floating stars -->
     <script>
-        for (let i = 0; i < 50; i++) {
-            let star = document.createElement("div");
-            star.className = "stars";
-            star.style.left = Math.random() * 100 + "vw";
-            star.style.top = Math.random() * 100 + "vh";
-            document.body.appendChild(star);
-        }
-    </script>
-
-    <script type="module">
-        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
-
+        // JavaScript handling file input
         const uploadBox = document.getElementById("upload-box");
         const imageInput = document.getElementById("image-input");
         const imagePreview = document.getElementById("image-preview");
         const analyzeBtn = document.getElementById("analyze-btn");
-        const resultDiv = document.getElementById("result");
         const loadingDiv = document.getElementById("loading");
-        const tryAgainBtn = document.getElementById("try-again-btn");
-        const backHomeBtn = document.getElementById("back-home-btn");
+        const resultDiv = document.getElementById("result");
 
         let selectedFile = null;
 
-        // Handle drag and drop
+        // Handle drag over and drop
         uploadBox.addEventListener("dragover", (event) => {
             event.preventDefault();
             uploadBox.style.background = "rgba(0, 0, 0, 0.85)";
@@ -290,7 +262,7 @@ layout: page
             handleFile(selectedFile);
         });
 
-        // Handle file selection logic
+        // Handle file upload logic
         function handleFile(file) {
             if (file) {
                 const reader = new FileReader();
@@ -298,13 +270,13 @@ layout: page
                     imagePreview.src = e.target.result;
                     imagePreview.style.display = "block";
                     analyzeBtn.disabled = false;
-                    uploadBox.style.display = "none"; // Hide the upload box after file is selected
+                    uploadBox.style.display = "none"; // Hide the upload box after selection
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        // Start analysis
+        // Start analysis (Placeholder function)
         analyzeBtn.addEventListener("click", async () => {
             if (!selectedFile) return;
 
@@ -312,31 +284,21 @@ layout: page
             resultDiv.textContent = "";
 
             try {
-                const client = await Client.connect("nosttradamus/astro-recognizer");
-                const imageBlob = new Blob([selectedFile], { type: selectedFile.type });
-                const result = await client.predict("/predict", { image: imageBlob });
-
-                if (result.data.length > 0 && result.data[0].confidences.length > 0) {
-                    const highestConfidence = result.data[0].confidences.reduce((max, item) => 
-                        item.confidence > max.confidence ? item : max, 
-                        result.data[0].confidences[0]
-                    );
-                    resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
-                } else {
-                    resultDiv.textContent = "No prediction available.";
-                }
+                // Placeholder prediction process
+                const result = { data: [{ confidences: [{ label: "Andromeda Galaxy", confidence: 0.98 }] }] };
+                const highestConfidence = result.data[0].confidences.reduce((max, item) => item.confidence > max.confidence ? item : max, result.data[0].confidences[0]);
+                resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
             } catch (error) {
                 resultDiv.textContent = "Error, try again!";
             } finally {
                 loadingDiv.style.display = "none";
-                tryAgainBtn.style.display = "inline-block"; // Show "Try Again" button
             }
         });
 
-        // Try again button functionality
-        tryAgainBtn.addEventListener("click", () => {
-            window.location.reload(); // Reload the page
-        });
+        // Back to home button
+        document.getElementById("back-home-btn").onclick = function() {
+            window.location.href = "{{ site.baseurl }}"; // Ensure it's correct based on your Jekyll config
+        }
     </script>
 
 </body>
