@@ -4,8 +4,11 @@ layout: page
 ---
 
 # Image Recognizer
-Can classify 17 different types of astronomical elemnts <br/>
-The Elements: <br/>
+
+Can classify 17 different types of astronomical elements
+
+The Elements:
+
 1. Andromeda Galaxy
 2. Black Holes
 3. Crab Nebula
