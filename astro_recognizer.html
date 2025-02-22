@@ -93,7 +93,7 @@ layout: page
     const file = event.target.files[0];
     if (!file) return;
 
-    // Reset displays
+    // Reset previous state
     imagePreview.innerHTML = '';
     resultDiv.textContent = '';
     loadingDiv.style.display = "block";
@@ -102,56 +102,100 @@ layout: page
       // Display image preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px;">`;
+        imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px; margin: 15px 0; border: 1px solid #ddd;">`;
       };
       reader.readAsDataURL(file);
 
-      // 1. Verify API connection
+      // API Connection with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const client = await Client.connect("nosttradamus/astro-recognizer", {
-        hf_token: "YOUR_HF_TOKEN_HERE" // Add if Space is private
+        hf_token: null, // Add your HF token here if needed
+        signal: controller.signal
       });
 
-      // 2. Add timeout for failed requests
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-      // 3. Make prediction with error handling
       const result = await client.predict("/predict", {
-        image: new Blob([file], { type: file.type }),
-        signal: controller.signal
+        image: new Blob([file], { type: file.type })
       });
 
       clearTimeout(timeoutId);
 
-      console.log("RAW API RESPONSE:", result);
+      // Debugging: Log full response structure
+      console.log("API Response Hierarchy:", {
+        data: result?.data,
+        firstLevel: result?.data?.[0],
+        secondLevel: result?.data?.[0]?.[0]
+      });
 
-      // 4. Handle response format variations
-      const rawData = result?.data;
-      if (!rawData || !Array.isArray(rawData[0][0])) {
-        throw new Error("Unexpected API response structure");
+      // Validate response structure
+      if (!Array.isArray(result?.data)) {
+        throw new Error("Invalid root response format");
       }
 
-      // 5. Process predictions safely
-      const validPredictions = rawData[0][0]
-        .filter(p => p?.tibel?.trim() && !isNaN(p?.confidence))
+      const firstOutput = result.data[0];
+      if (!Array.isArray(firstOutput)) {
+        throw new Error("First output level is not an array");
+      }
+
+      const predictions = firstOutput[0];
+      if (!Array.isArray(predictions)) {
+        throw new Error("Predictions array not found in response");
+      }
+
+      // Process valid predictions
+      const validPredictions = predictions
+        .filter(p => typeof p === 'object' && 'tibel' in p && 'confidence' in p)
         .sort((a, b) => b.confidence - a.confidence);
 
       if (validPredictions.length === 0) {
-        throw new Error("No valid predictions found");
+        throw new Error("No valid predictions in array");
       }
 
-      // 6. Clean output
-      const cleanLabel = validPredictions[0].tibel
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/\b\w/g, c => c.toUpperCase());
+      // Format the label
+      const rawLabel = validPredictions[0].tibel;
+      const cleanLabel = rawLabel
+        .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between camelCase
+        .replace(/\b\w/g, c => c.toUpperCase()) // Capitalize first letters
+        .replace(/\s+/g, ' ') // Collapse multiple spaces
+        .trim();
 
-      resultDiv.textContent = cleanLabel;
+      resultDiv.innerHTML = `
+        <div style="
+          padding: 15px;
+          margin-top: 20px;
+          background: #f6f8fa;
+          border: 1px solid #e1e4e8;
+          border-radius: 6px;
+        ">
+          <strong style="color: #0366d6;">Prediction:</strong> 
+          ${cleanLabel}
+        </div>
+      `;
 
     } catch (error) {
-      console.error("FULL ERROR DETAILS:", error);
-      resultDiv.textContent = error.message.includes("aborted")
-        ? "Request timed out - check internet connection"
-        : "Prediction failed - try another image";
+      console.error("Error Breakdown:", {
+        error,
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+
+      resultDiv.innerHTML = `
+        <div style="
+          padding: 15px;
+          margin-top: 20px;
+          background: #fff8f8;
+          border: 1px solid #ffd6d6;
+          color: #cb2431;
+          border-radius: 6px;
+        ">
+          ${error.message.includes('aborted') ? 
+            '⌛ Timeout - Try a smaller image' : 
+            '⚠️ Prediction Failed - Check console'}
+        </div>
+      `;
+
     } finally {
       loadingDiv.style.display = "none";
     }
