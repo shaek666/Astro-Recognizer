@@ -1,6 +1,5 @@
-theme: jekyll-theme-primer  # GitHub's native theme
+theme: jekyll-theme-primer
 plugins:
-  - jekyll-remote-theme
   - jekyll-seo-tag
 
 # Add baseurl if using project site
