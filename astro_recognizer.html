@@ -121,20 +121,26 @@ layout: page
             100% { text-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffcc; }
         }
 
-        input[type="file"] {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #fff;
-            border-radius: 5px;
+        /* Styled file input */
+        .custom-file-upload {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(90deg, #ff00ff, #00ffff);
             color: white;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            box-shadow: 0 0 15px #00ffcc;
             cursor: pointer;
-            transition: all 0.3s;
-            display: block;
-            margin: 20px auto;
+            transition: all 0.3s ease-in-out;
         }
 
-        input[type="file"]:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .custom-file-upload:hover {
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+            transform: scale(1.1);
+        }
+
+        input[type="file"] {
+            display: none;
         }
 
         #image-preview {
@@ -212,8 +218,14 @@ layout: page
 
     <h1>🌌 Astro Recognizer 🚀</h1>
     
+    <label for="image-input" class="custom-file-upload">📁 Choose File</label>
     <input id="image-input" type="file">
     <img id="image-preview" src="#" alt="Uploaded Image Preview">
+    
+    <div class="button-container">
+        <button class="button" id="analyze-btn" disabled>🔬 Start Analyzing</button>
+    </div>
+
     <div id="loading">🔄 Analyzing...</div>
     <div id="result"></div>
 
@@ -238,42 +250,50 @@ layout: page
 
         const imageInput = document.getElementById("image-input");
         const imagePreview = document.getElementById("image-preview");
+        const analyzeBtn = document.getElementById("analyze-btn");
         const resultDiv = document.getElementById("result");
         const loadingDiv = document.getElementById("loading");
 
-        imageInput.addEventListener("change", async (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                // Show the image preview
+        let selectedFile = null;
+
+        imageInput.addEventListener("change", (event) => {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     imagePreview.src = e.target.result;
                     imagePreview.style.display = "block";
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(selectedFile);
 
-                loadingDiv.style.display = "block";
-                resultDiv.textContent = "";
+                analyzeBtn.disabled = false;
+            }
+        });
 
-                try {
-                    const client = await Client.connect("nosttradamus/astro-recognizer");
-                    const imageBlob = new Blob([file], { type: file.type });
-                    const result = await client.predict("/predict", { image: imageBlob });
+        analyzeBtn.addEventListener("click", async () => {
+            if (!selectedFile) return;
 
-                    if (result.data.length > 0 && result.data[0].confidences.length > 0) {
-                        const highestConfidence = result.data[0].confidences.reduce((max, item) => 
-                            item.confidence > max.confidence ? item : max, 
-                            result.data[0].confidences[0]
-                        );
-                        resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
-                    } else {
-                        resultDiv.textContent = "No prediction available.";
-                    }
-                } catch (error) {
-                    resultDiv.textContent = "Error, try again!";
-                } finally {
-                    loadingDiv.style.display = "none";
+            loadingDiv.style.display = "block";
+            resultDiv.textContent = "";
+
+            try {
+                const client = await Client.connect("nosttradamus/astro-recognizer");
+                const imageBlob = new Blob([selectedFile], { type: selectedFile.type });
+                const result = await client.predict("/predict", { image: imageBlob });
+
+                if (result.data.length > 0 && result.data[0].confidences.length > 0) {
+                    const highestConfidence = result.data[0].confidences.reduce((max, item) => 
+                        item.confidence > max.confidence ? item : max, 
+                        result.data[0].confidences[0]
+                    );
+                    resultDiv.textContent = `Prediction: 🚀 ${highestConfidence.label}`;
+                } else {
+                    resultDiv.textContent = "No prediction available.";
                 }
+            } catch (error) {
+                resultDiv.textContent = "Error, try again!";
+            } finally {
+                loadingDiv.style.display = "none";
             }
         });
     </script>
