@@ -1,7 +1,12 @@
-remote_theme: abhinavs/moonwalk
+remote_theme: abhinavs/moonwalk@v5.1.23  # Pin specific theme version
 plugins:
   - jekyll-remote-theme
-  - jekyll-seo-tag  
+  - jekyll-seo-tag
+  - jekyll-feed  # Add this for better compatibility
+
+# Add baseurl if using project site
+baseurl: /Astro-Recognizer  # Your repository name
+url: https://shaek666.github.io
 
 title: Astro Recognizer
 description: An image classification API that classifies 17 different types of astronomical elements found.
