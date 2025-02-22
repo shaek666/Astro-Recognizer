@@ -114,24 +114,23 @@ layout: page
 
       console.log("Full API Response:", result);
 
-      // SAFETY CHECKS - Handle 3-level nested response
-      const predictions = result?.data?.[0]?.[0] || [];
-      if (!Array.isArray(predictions)) {
-        console.error("Unexpected response structure:", predictions);
-        throw new Error("Invalid response format");
-      }
+      // DIRECTLY ACCESS THE STRUCTURE FROM YOUR SCREENSHOT
+      const rawPredictions = result.data[0][0];
+      
+      // Clean and format the predictions
+      const validPredictions = rawPredictions
+        .filter(p => p.tibel && !isNaN(p.confidence)) // Use 'tibel' from your screenshot
+        .sort((a, b) => b.confidence - a.confidence);
 
-      // Find the prediction with highest confidence
-      const topPrediction = predictions.reduce((max, current) => 
-        (current.confidence > max.confidence) ? current : max, 
-        {confidence: -Infinity}
-      );
-
-      // Clean and display
-      const cleanLabel = topPrediction.label?.replace(/\s+/g, ' ')?.trim() 
-        || "Could not determine prediction";
+      if (validPredictions.length > 0) {
+        const topPrediction = validPredictions[0].tibel
+          .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between words
+          .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize first letters
         
-      resultDiv.textContent = cleanLabel;
+        resultDiv.textContent = topPrediction;
+      } else {
+        resultDiv.textContent = "Could not determine prediction";
+      }
 
     } catch (error) {
       console.error("Full Error:", error);
