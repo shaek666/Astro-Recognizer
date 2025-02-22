@@ -3,12 +3,6 @@ plugins:
   - jekyll-remote-theme
   - jekyll-seo-tag
 
-remote_theme: abhinavs/moonwalk@5.1.0  # Pin specific theme version
-plugins:
-  - jekyll-remote-theme
-  - jekyll-seo-tag
-  - jekyll-feed  # Add this for better compatibility
-
 # Add baseurl if using project site
 baseurl: /Astro-Recognizer  # Your repository name
 url: https://shaek666.github.io
