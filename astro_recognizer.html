@@ -93,31 +93,40 @@ layout: page
     const file = event.target.files[0];
     if (!file) return;
 
-    // Reset previous results
+    // Reset displays
     imagePreview.innerHTML = '';
     resultDiv.textContent = '';
     loadingDiv.style.display = "block";
 
     try {
+      // Display image preview
       const reader = new FileReader();
       reader.onload = (e) => {
         imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 300px;">`;
       };
       reader.readAsDataURL(file);
 
+      // Connect to API
       const client = await Client.connect("nosttradamus/astro-recognizer");
       const result = await client.predict("/predict", {
         image: new Blob([file], { type: file.type })
       });
 
-      // SAFETY CHECKS - Only extract clean label
-      const cleanPrediction = result?.data?.[0]?.[0]?.label 
-        || "Could not determine prediction";
-        
-      resultDiv.textContent = cleanPrediction.replace(/\s+/g, ' ').trim();
+      console.log("Raw API Response:", result); // Debug log
+
+      // SAFETY CHECKS - Handle API response format
+      const predictions = result?.data?.[0] || [];
+      if (!Array.isArray(predictions)) throw new Error("Invalid response format");
+      
+      const topPrediction = predictions.find(p => p.label && p.confidence) || {};
+      const cleanLabel = topPrediction.label 
+        ? topPrediction.label.trim().replace(/ /g, ' ') 
+        : "Could not determine prediction";
+
+      resultDiv.textContent = cleanLabel;
 
     } catch (error) {
-      console.error("API Error:", error);
+      console.error("Full Error:", error);
       resultDiv.textContent = "Prediction failed - try another image";
     } finally {
       loadingDiv.style.display = "none";
