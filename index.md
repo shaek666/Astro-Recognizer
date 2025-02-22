@@ -3,9 +3,9 @@ title: Home
 layout: page
 ---
 
-# Astro Recognizer
+[Home]({{ site.baseurl }}/) | [Classifier]({{ site.baseurl }}/astro_recognizer)
 
-[Try the Classifier →]({{ site.baseurl }}/classifier/)
+# Astro Recognizer
 
 Can classify 17 different types of astronomical elements.
 
