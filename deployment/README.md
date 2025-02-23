@@ -15,4 +15,4 @@ Check out the configuration reference at https://huggingface.co/docs/hub/spaces-
 
 HuggingFace Spaces App URL: https://huggingface.co/spaces/nosttradamus/astro-recognizer
 
-Gradio App URL: https://1855e45bc17d872edc.gradio.live
+Gradio App URL: https://1855e45bc17d872edc.gradio.live [ Most likely the link is expired. ]

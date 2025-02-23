@@ -1,39 +1,88 @@
-# Astro-Recognizer
-An image classification model from data collection, cleaning, model training, deployment and API integration. <br/>
-The model can classify 17 different types of astronomical elements <br/>
-The elements are: <br/>
+# 🌌 Astro-Recognizer  
+An end-to-end image classification model covering data collection, cleaning, model training, deployment, and API integration.  
 
-1. Andromeda Galaxy
-2. Black Holes
-3. Crab Nebula
-4. Eagle Nebula
-5. Earth Planet
-6. Exoplanets
-7. Jupiter Planet
-8. Mars Planet
-9. Mercury Planet
-10. Milky Way Galaxy
-11. Neptune Planet
-12. Orion Nebula
-13. Saturn Planet
-14. Supernova Remnants
-15. Triangulum Galaxy
-16. Uranus Planet
-17. Venus Planet
+---
 
-# Dataset Preparation
-**Data Collection:** Downloaded from DuckDuckGo using term name <br/>
-**DataLoader:** Used fastai DataBlock API to set up the DataLoader. <br/>
-**Data Augmentation:** fastai provides default data augmentation which operates in GPU. <br/>
-Details can be found in `notebooks/data_prep.ipynb`
+## 🚀 The model classifies 17 different types of astronomical elements:  
 
-# Training and Data Cleaning
-**Training:** Fine-tuned a resnet34 model for 5 epochs (8 times) and got upto ~86% accuracy. <br/>
-**Data Cleaning:** This part took the highest time. Since I collected data from browser, there were many noises. Also, there were images that contained. I cleaned and updated data using fastai ImageClassifierCleaner. I cleaned the data each time after training or finetuning, except for the last time which was the final iteration of the model. <br/>
+### 🌠 Galaxies & Nebulae  
+> **These celestial wonders contain billions of stars, gas, and dust, shaping the grand structure of the universe.**  
 
-# Model Deployment
-I deployed to model to HuggingFace Spaces Gradio App. The implementation can be found in `deployment` folder or [here](https://huggingface.co/spaces/nosttradamus/astro-recognizer). <br/>
-<img src = "deployment/hf_app.png" width="700" height="350">
+| Name                |
+|---------------------|
+| 🌌 Andromeda Galaxy   |
+| 🌌 Milky Way Galaxy   |
+| 🌌 Triangulum Galaxy  |
+| 🌟 Crab Nebula        |
+| 🌟 Eagle Nebula       |
+| 🌟 Orion Nebula       |
 
-# API integration with GitHub Pages
-The deployed model API is integrated [here](https://shaek666.github.io/Astro-Recognizer/) in GitHub Pages Website. Implementation and other details can be found in `docs` folder.
+---
+
+### 🪐 Planets  
+> **Planets orbit stars, with some potentially harboring life. Each has unique atmospheres and compositions.**  
+
+| Name      |
+|----------|
+| 🌍 Earth    |
+| 🪐 Jupiter  |
+| 🔴 Mars     |
+| 🏵️ Mercury  |
+| 🔵 Neptune  |
+| 🟡 Saturn   |
+| 🌀 Uranus   |
+| 🟠 Venus    |
+
+---
+
+### 🌑 Others  
+> **Mysterious cosmic objects, from collapsed stars to planetary bodies beyond our solar system.**  
+
+| Name           |
+|---------------|
+| 🕳️ Black Holes   |
+| 🪐 Exoplanets    |
+| 💥 Supernova Remnants |
+
+---
+
+## 📂 Dataset Preparation  
+✅ **Data Collection:** Images were sourced from DuckDuckGo using search terms.  
+✅ **DataLoader:** Fastai's `DataBlock API` was used to set up the DataLoader.  
+✅ **Data Augmentation:** Fastai's built-in GPU-optimized augmentation was applied.  
+
+📌 **Details available in** [`notebooks/data_prep.ipynb`](notebooks/data_prep.ipynb)  
+
+---
+
+## 🎯 Model Training & Data Cleaning  
+⚡ **Training:** Fine-tuned a `ResNet-34` model over 5 epochs (8 times), achieving **~86% accuracy**.  
+🧹 **Data Cleaning:** Since data was collected from the web, noise removal was crucial. The `ImageClassifierCleaner` tool from Fastai was used iteratively after each training cycle, except for the final iteration.  
+
+---
+
+## 🚀 Model Deployment  
+The trained model is deployed on **Hugging Face Spaces** using Gradio.  
+
+📌 **Implementation:** [`deployment/`](deployment/)  
+🔗 **Live Demo:** [Hugging Face App](https://huggingface.co/spaces/nosttradamus/astro-recognizer)  
+
+<p align="center">
+  <img src="deployment/hf_app.png" width="700" style="border-radius:10px;box-shadow:0 2px 15px #0003">
+</p>
+
+---
+
+## 🌍 API Integration with GitHub Pages  
+The deployed model is **integrated with GitHub Pages** for easy access.  
+
+🔗 **Live Website:** [Astro Recognizer](https://shaek666.github.io/Astro-Recognizer/)  
+📂 **Implementation details:** Available in the [`docs`](docs/) folder.  
+
+---
+
+---
+
+<p align="center">
+🌟 _Enjoy exploring the universe through AI!_ 🚀✨
+</p>
