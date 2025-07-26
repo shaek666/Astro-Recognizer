@@ -1,10 +1,6 @@
 from fastai.vision.all import *
 import gradio as gr
 
-# import pathlib
-# temp = pathlib.PosixPath
-# pathlib.PosixPath = pathlib.WindowsPath
-
 astronomy_labels = (
 'Andromeda Galaxy',
  'Black Holes',
